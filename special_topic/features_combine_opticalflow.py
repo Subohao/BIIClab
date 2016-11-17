@@ -59,59 +59,30 @@ resized_old_gray = cv2.cvtColor(resized_old_frame, cv2.COLOR_BGR2GRAY)
 (rects_old, weights_old) = hog.detectMultiScale(resized_old_frame, winStride=(4, 4),
 		padding=(8, 8), scale=1.05)
 
-x_total = rects_old[0,0]
-y_total = rects_old[0,1]
-w_total = rects_old[1,0]-rects_old[0,0]+rects_old[1,2]
-h_total = rects_old[0,3]
-x_middle = rects_old[0,0]+(w_total)/2
-
-p0 = cv2.goodFeaturesToTrack(resized_old_gray[x_total:x_total+w_total+1,y_total:y_total+h_total+1], mask= None , **feature_params)
-
-p0_a = cv2.goodFeaturesToTrack(resized_old_gray[rects_old[0,0]:rects_old[0,0]+rects_old[0,2]+1,rects_old[0,1]:rects_old[0,1]+rects_old[0,3]+1], mask= None , **feature_params)
+#person a
+a_left = rects_old[0,0]
+a_top = rects_old[0,1]
+a_right = rects_old[0,0] + rects_old[0,2]
+a_bottom = rects_old[0,1] + rects_old[0,3]
+#find good features in the person a box
+p0_a = cv2.goodFeaturesToTrack(resized_old_gray[a_top:a_bottom+1,a_left:a_right+1], mask= None , **feature_params)
 [p0_a_dim,p0_a_row,p0_a_col] = p0_a.shape
 for i in range(p0_a_dim):
-    p0_a[i,0,0] = p0_a[i,0,0]+rects_old[0,0]
-    p0_a[i,0,1] = p0_a[i,0,1]+rects_old[0,1]
-
-p0_b = cv2.goodFeaturesToTrack(resized_old_gray[rects_old[1,0]:rects_old[1,0]+rects_old[1,2]+1,rects_old[1,1]:rects_old[1,1]+rects_old[1,3]+1], mask= None , **feature_params)
+    p0_a[i,0,0] = p0_a[i,0,0]+a_left
+    p0_a[i,0,1] = p0_a[i,0,1]+a_top
+#person b
+b_left = rects_old[1,0]
+b_top = rects_old[1,1]
+b_right = rects_old[1,0] + rects_old[1,2]
+b_bottom = rects_old[1,1] + rects_old[1,3]
+#find good features in the person b box
+p0_b = cv2.goodFeaturesToTrack(resized_old_gray[b_top:b_bottom+1,b_left:b_right+1], mask= None , **feature_params)
 [p0_b_dim,p0_b_row,p0_b_col] = p0_b.shape
 for i in range(p0_b_dim):
-    p0_b[i,0,0] = p0_b[i,0,0]+rects_old[1,0]
-    p0_b[i,0,1] = p0_b[i,0,1]+rects_old[1,1]
+    p0_b[i,0,0] = p0_b[i,0,0]+b_left
+    p0_b[i,0,1] = p0_b[i,0,1]+b_top
+
     
-[p0_dim,p0_row,p0_col] = p0.shape
-for i in range(p0_dim):
-    p0[i,0,0] = p0[i,0,0]+rects_old[0,0]
-    p0[i,0,1] = p0[i,0,1]+rects_old[0,1]
-
-#calculate the number of points in the left side
-index_a = 0    
-for i in range(p0_dim):
-    if p0[i,0,0] >= rects_old[0,0] and p0[i,0,0] <= rects_old[0,0]+rects_old[0,2]:
-        index_a = index_a+1
-#create a 3d-array to store left points
-dtype = np.float32
-j = 0
-points_a = np.zeros((index_a,p0_row,p0_col),dtype)
-for i in range(p0_dim):
-    if p0[i,0,0] >= rects_old[0,0] and p0[i,0,0] <= rects_old[0,0]+rects_old[0,2]:
-        points_a[j,0,0] = p0[i,0,0]
-        points_a[j,0,1] = p0[i,0,1]
-        j = j+1
-
-#calculate the number of points in the right side
-index_b = 0    
-for i in range(p0_dim):
-    if p0[i,0,0] >= rects_old[1,0] and p0[i,0,0] <= rects_old[1,0]+rects_old[1,2]:
-        index_b = index_b+1
-#create a 3d-array to store left points
-j = 0
-points_b = np.zeros((index_b,p0_row,p0_col),dtype)
-for i in range(p0_dim):
-    if p0[i,0,0] >= rects_old[1,0] and p0[i,0,0] <= rects_old[1,0]+rects_old[1,2]:
-        points_b[j,0,0] = p0[i,0,0]
-        points_b[j,0,1] = p0[i,0,1]
-        j = j+1
 
 # Create a mask image for drawing purposes
 mask = np.zeros_like(resized_old_frame)
@@ -167,10 +138,10 @@ while True:
 #        break
                 
                 
-    p1, st, err = cv2.calcOpticalFlowPyrLK(resized_old_gray, frame_gray, p0_a, None, **lk_params)                
+    p1, st, err = cv2.calcOpticalFlowPyrLK(resized_old_gray, frame_gray, p0_b, None, **lk_params)                
     # Select good points
     good_new = p1[st==1]
-    good_old = p0_a[st==1]
+    good_old = p0_b[st==1]
     # draw the tracks
     for i,(new,old) in enumerate(zip(good_new,good_old)):
         a,b = new.ravel()
