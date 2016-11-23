@@ -37,7 +37,7 @@ else:
 	camera = cv2.VideoCapture(args["video"])
 
  # params for ShiTomasi corner detection
-feature_params = dict( maxCorners = 100,
+feature_params = dict( maxCorners = 50,
                        qualityLevel = 0.3,
                        minDistance = 7,
                        blockSize = 7 )
@@ -59,13 +59,18 @@ resized_old_gray = cv2.cvtColor(resized_old_frame, cv2.COLOR_BGR2GRAY)
 (rects_old, weights_old) = hog.detectMultiScale(resized_old_frame, winStride=(4, 4),
 		padding=(8, 8), scale=1.05)
 
+# set up the ROI for tracking
+hsv_roi =  cv2.cvtColor(resized_old_frame, cv2.COLOR_BGR2HSV)
+#threshold the HSV image to get certain color
+mask = cv2.inRange(hsv_roi, np.array((0., 0.,0.)), np.array((23.,13.,10.)))
+
 #person a
 a_left = rects_old[0,0]
 a_top = rects_old[0,1]
 a_right = rects_old[0,0] + rects_old[0,2]
 a_bottom = rects_old[0,1] + rects_old[0,3]
 #find good features in the person a box
-p0_a = cv2.goodFeaturesToTrack(resized_old_gray[a_top:a_bottom+1,a_left:a_right+1], mask= None , **feature_params)
+p0_a = cv2.goodFeaturesToTrack(resized_old_gray[a_top:a_bottom+1,a_left:a_right+1], mask = mask[a_top:a_bottom+1,a_left:a_right+1] , **feature_params)
 [p0_a_dim,p0_a_row,p0_a_col] = p0_a.shape
 for i in range(p0_a_dim):
     p0_a[i,0,0] = p0_a[i,0,0]+a_left
@@ -76,7 +81,7 @@ b_top = rects_old[1,1]
 b_right = rects_old[1,0] + rects_old[1,2]
 b_bottom = rects_old[1,1] + rects_old[1,3]
 #find good features in the person b box
-p0_b = cv2.goodFeaturesToTrack(resized_old_gray[b_top:b_bottom+1,b_left:b_right+1], mask= None , **feature_params)
+p0_b = cv2.goodFeaturesToTrack(resized_old_gray[b_top:b_bottom+1,b_left:b_right+1], mask = mask[b_top:b_bottom+1,b_left:b_right+1] , **feature_params)
 [p0_b_dim,p0_b_row,p0_b_col] = p0_b.shape
 for i in range(p0_b_dim):
     p0_b[i,0,0] = p0_b[i,0,0]+b_left
@@ -127,29 +132,32 @@ while True:
     #plot rect after NMS
     for (xA, yA, xB, yB) in pick:
                 cv2.rectangle(resized, (xA, yA), (xB, yB), (0, 255, 0), 2)
-#    [pick_row,pick_col] = pick.shape
-#    pick_row = int(pick_row)
-#    pick_col = int(pick_col)
-#    if pick_old:
-#        for  in range(pick_row):
-#            distance = 
-#            
-#    else:
-#        break
                 
-                
-    p1, st, err = cv2.calcOpticalFlowPyrLK(resized_old_gray, frame_gray, p0_b, None, **lk_params)                
+    #left person            
+    p1, st, err = cv2.calcOpticalFlowPyrLK(resized_old_gray, frame_gray, p0_a, None, **lk_params)                
     # Select good points
-    good_new = p1[st==1]
-    good_old = p0_b[st==1]
+    good_new_a = p1[st==1]
+    good_old_a = p0_a[st==1]
     # draw the tracks
-    for i,(new,old) in enumerate(zip(good_new,good_old)):
-        a,b = new.ravel()
-        c,d = old.ravel()
-        cv2.line(mask, (a,b),(c,d), color[i].tolist(), 2)#problem found!
-        cv2.circle(resized,(a,b),5,color[i].tolist(),-1)
+    for i,(new_a,old_a) in enumerate(zip(good_new_a,good_old_a)):
+        a_1,b_1 = new_a.ravel()
+        c_1,d_1 = old_a.ravel()
+        cv2.line(mask, (a_1,b_1),(c_1,d_1), color[i].tolist(), 2)#problem found!
+        cv2.circle(resized,(a_1,b_1),5,color[i].tolist(),-1)
         img = cv2.add(resized,mask)
          #show the frame to our screen
+    #right person
+    p2, st, err = cv2.calcOpticalFlowPyrLK(resized_old_gray, frame_gray, p0_b, None, **lk_params)                
+    # Select good points
+    good_new_b = p2[st==1]
+    good_old_b = p0_b[st==1]
+    # draw the tracks
+    for i,(new_b,old_b) in enumerate(zip(good_new_b,good_old_b)):
+        a_2,b_2 = new_b.ravel()
+        c_2,d_2 = old_b.ravel()
+        cv2.line(mask, (a_2,b_2),(c_2,d_2), color[i].tolist(), 2)#problem found!
+        cv2.circle(resized,(a_2,b_2),5,color[i].tolist(),-1)
+        img = cv2.add(resized,mask)
     cv2.imshow("After_NMS_Frame", img)
     cv2.imshow("Before_NMS_Fram", orig_resized)
     
