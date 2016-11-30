@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Oct 24 16:40:25 2016
-
 @author: user
 """
 
@@ -56,13 +55,9 @@ r = 400.0 / old_frame.shape[1]
 dim = (400, int(old_frame.shape[0] * r))
 resized_old_frame = cv2.resize(old_frame, dim, interpolation = cv2.INTER_AREA)
 resized_old_gray = cv2.cvtColor(resized_old_frame, cv2.COLOR_BGR2GRAY)
-(rects_old, weights_old) = hog.detectMultiScale(resized_old_frame, winStride=(4, 4),
+(rects_old, weights_old) = hog.detectMultiScale(resized_old_frame, winStride=(8, 8),
 		padding=(8, 8), scale=1.05)
 
-# set up the ROI for tracking
-hsv_roi =  cv2.cvtColor(resized_old_frame, cv2.COLOR_BGR2HSV)
-#threshold the HSV image to get certain color
-mask = cv2.inRange(hsv_roi, np.array((0., 0.,0.)), np.array((23.,13.,10.)))
 
 #person a
 a_left = rects_old[0,0]
@@ -70,7 +65,7 @@ a_top = rects_old[0,1]
 a_right = rects_old[0,0] + rects_old[0,2]
 a_bottom = rects_old[0,1] + rects_old[0,3]
 #find good features in the person a box
-p0_a = cv2.goodFeaturesToTrack(resized_old_gray[a_top:a_bottom+1,a_left:a_right+1], mask = mask[a_top:a_bottom+1,a_left:a_right+1] , **feature_params)
+p0_a = cv2.goodFeaturesToTrack(resized_old_gray[a_top:a_bottom+1,a_left:a_right+1], mask = None , **feature_params)
 [p0_a_dim,p0_a_row,p0_a_col] = p0_a.shape
 for i in range(p0_a_dim):
     p0_a[i,0,0] = p0_a[i,0,0]+a_left
@@ -81,7 +76,7 @@ b_top = rects_old[1,1]
 b_right = rects_old[1,0] + rects_old[1,2]
 b_bottom = rects_old[1,1] + rects_old[1,3]
 #find good features in the person b box
-p0_b = cv2.goodFeaturesToTrack(resized_old_gray[b_top:b_bottom+1,b_left:b_right+1], mask = mask[b_top:b_bottom+1,b_left:b_right+1] , **feature_params)
+p0_b = cv2.goodFeaturesToTrack(resized_old_gray[b_top:b_bottom+1,b_left:b_right+1], mask = None , **feature_params)
 [p0_b_dim,p0_b_row,p0_b_col] = p0_b.shape
 for i in range(p0_b_dim):
     p0_b[i,0,0] = p0_b[i,0,0]+b_left
@@ -111,7 +106,7 @@ while True:
     resized = cv2.resize(frame, dim, interpolation = cv2.INTER_AREA)
     frame_gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
     orig_resized = resized.copy()
-    (rects, weights) = hog.detectMultiScale(resized, winStride=(4, 4),
+    (rects, weights) = hog.detectMultiScale(resized, winStride=(8, 8),
 		padding=(8, 8), scale=1.05)
     for (x_rect, y_rect, w_rect, h_rect) in rects:
                 cv2.rectangle(orig_resized, (x_rect, y_rect), (x_rect + w_rect, y_rect + h_rect), (0, 0, 255), 2)
