@@ -16,8 +16,16 @@ import time
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-v", "--video", default="D://Videos/April8_2sentence1.mpg", help="the path for video")
+ap.add_argument("-v", "--video", default="D://senior/CCL/video/April30/April30_2sentence1.mpg", help="the path for video")
 args = vars(ap.parse_args())
+
+
+## evaluate the command line arguments (using the eval function like
+## this is not good form, but let's tolerate it for the example)
+#winStride = (8, 8)
+#padding = (16, 16)
+#meanShift = True if -1 > 0 else False
+
 
 # initialize the HOG descriptor/person detector
 hog = cv2.HOGDescriptor()
@@ -35,8 +43,9 @@ else:
 #camera = cv2.VideoCapture('D://Videos/slow_traffic_small.mp4')
 
 # take first frame of the video
-(grabbed,frame) = camera.read()
-(rects, weights) = hog.detectMultiScale(frame, winStride=(4, 4), padding=(8, 8), scale=1.25)
+(grabbed,frame_old) = camera.read()
+frame = frame_old[:,0:669,:]
+(rects, weights) = hog.detectMultiScale(frame, winStride=(4, 4), padding=(32,32), scale=1.05)
 rects = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rects])
 #rects = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rects])
 pick = non_max_suppression(rects, probs=None, overlapThresh=0.65)
@@ -46,12 +55,12 @@ pick = non_max_suppression(rects, probs=None, overlapThresh=0.65)
 # setup initial location of window
 # r,h,c,w - region of image
 #           simply hardcoded the values    
-track_window2 = np.array([[pick[i,0], pick[i,1], 150,300] for i in range(pick.shape[0])])
+track_window2 = np.array([[pick[i,0], pick[i,1], 100,400] for i in range(pick.shape[0])])
 
 # set up the ROI for tracking
 hsv_roi =  cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 #threshold the HSV image to get certain color
-mask = cv2.inRange(hsv_roi, np.array((0., 0.,0.)), np.array((23.,13.,10.)))
+mask = cv2.inRange(hsv_roi, np.array((0., 0.,0.)), np.array((50.,50.,30.)))
 #for black (0, 0, 0) & (29, 30, 30)
 roi_hist = cv2.calcHist([hsv_roi],[0],mask,[180],[0,180])
 cv2.normalize(roi_hist,roi_hist,0,255,cv2.NORM_MINMAX)
@@ -61,7 +70,8 @@ term_crit = ( cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1 )
 
 while(1):
     #bool ret if is 1, read correctly
-    grabbed ,frame = camera.read()
+    (grabbed ,frame_old) = camera.read()
+    frame = frame_old[:,0:669,:]
 
     if grabbed == True:
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -84,7 +94,7 @@ while(1):
         cv2.imshow('img2',frame)
 #        cv2.imshow(dst)
 
-        k = cv2.waitKey(60) & 0xff
+        k = cv2.waitKey(30) & 0xff
         if k == ord("q"):
             break
     else:
