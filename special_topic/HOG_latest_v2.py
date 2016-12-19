@@ -115,12 +115,24 @@ while True:
     #frame = imutils.resize(frame, width=500)
     r = 400.0 / frame.shape[1]
     dim = (400, int(frame.shape[0] * r))
-
+    #set the mask
+    
+    lower_black = np.array([0,0,0])
+    upper_black = np.array([180,255,46])
+    
+    
     # perform the actual resizing of the image and show it
     resized = cv2.resize(frame, dim, interpolation = cv2.INTER_AREA)
+    hsv = cv2.cvtColor(resized, cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(hsv, lower_black, upper_black)
+    res = cv2.bitwise_and(resized,resized, mask= mask)
+    res1 = np.zeros((res.shape[0],res.shape[1],res.shape[2]))
+    res1 = res
+    res1[res1 ==0 ] =255
+    
     frame_gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
     orig_resized = resized.copy()
-    (rects, weights) = hog.detectMultiScale(resized, winStride=(8, 8),
+    (rects, weights) = hog.detectMultiScale(np.uint8(res1), winStride=(8, 8),
 		padding=(8, 8), scale=1.05)
     
     frame_index = np.where(row[:,0]==count)
@@ -224,6 +236,7 @@ while True:
                 
 #    cv2.imshow("After_NMS_Frame", resized)
     cv2.imshow("After_NMS_Fram", orig_resized)
+    cv2.imshow('res1',np.uint8(res1))
     
     
     #store old rect coordinate    
@@ -234,7 +247,7 @@ while True:
     if key == ord("q"):
         break
     count +=1
-np.save('record_info.npy', record_info)
+np.save('record_info_mask_v1.npy', record_info)
 # cleanup the camera and close any open windows
 camera.release()
 cv2.destroyAllWindows()

@@ -84,7 +84,7 @@ def selectwindow(record_info_clear):
 AnswerA = np.array([])
 AnswerB = np.array([])
 #record_info_clear = unique_rows(record_info)
-record_info_clear = np.load('D://senior/CCL/record_info_clear.npy')
+record_info_clear = np.load('D://senior/CCL/record_info_clear_mask_NMS.npy')
 (AnswerA,AnswerB) = selectwindow(record_info_clear)      
 
 
