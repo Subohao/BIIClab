@@ -59,34 +59,14 @@ resized_old_gray = cv2.cvtColor(resized_old_frame, cv2.COLOR_BGR2GRAY)
 (rects_old, weights_old) = hog.detectMultiScale(resized_old_frame, winStride=(4, 4),
 		padding=(8, 8), scale=1.05)
 
-#person a
-a_left = rects_old[0,0]
-a_top = rects_old[0,1]
-a_right = rects_old[0,0] + rects_old[0,2]
-a_bottom = rects_old[0,1] + rects_old[0,3]
-#find good features in the person a box
-p0_a = cv2.goodFeaturesToTrack(resized_old_gray[a_left:a_right+1,a_top:a_bottom+1], mask= None , **feature_params)
-[p0_a_dim,p0_a_row,p0_a_col] = p0_a.shape
-for i in range(p0_a_dim):
-    p0_a[i,0,0] = p0_a[i,0,0]+a_left
-    p0_a[i,0,1] = p0_a[i,0,1]+a_top
-#person b
-b_left = rects_old[1,0]
-b_top = rects_old[1,1]
-b_right = rects_old[1,0] + rects_old[1,2]
-b_bottom = rects_old[1,1] + rects_old[1,3]
-#find good features in the person b box
-p0_b = cv2.goodFeaturesToTrack(resized_old_gray[b_left:b_right+1,b_top:b_bottom+1], mask= None , **feature_params)
-[p0_b_dim,p0_b_row,p0_b_col] = p0_b.shape
-for i in range(p0_b_dim):
-    p0_b[i,0,0] = p0_b[i,0,0]+b_left
-    p0_b[i,0,1] = p0_b[i,0,1]+b_top
+
 
 #plot first frame to check rectangle
 while(camera.isOpened()):
-    cv2.rectangle(resized_old_frame,(a_left,a_top),(a_right,a_bottom),(0,255,0),2)
-    cv2.rectangle(resized_old_frame,(b_left,b_top),(b_right,b_bottom),(0,0,255),2)
-    cv2.imshow('test',resized_old_frame[a_top:a_bottom+1,a_left:a_right+1])
+    cv2.rectangle(resized_old_frame,(148,55),(234,227),(0,255,0),2)
+    cv2.rectangle(resized_old_frame,(151,90),(218,223),(0,0,255),2)
+    cv2.rectangle(resized_old_frame,(193,69),(270,223),(255,0,0),2)
+    cv2.imshow('test',resized_old_frame)
     if cv2.waitKey(0) & 0xFF == ord('q'):
         break
 
