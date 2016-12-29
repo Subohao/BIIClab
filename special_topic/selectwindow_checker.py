@@ -33,8 +33,6 @@ def selectwindow(record_info_clear):
         checkpoint = 1
     [row_record_info_clear,col_record_info_clear] = np.shape(record_info_clear)
 
-#    index_A = 0
-#    index_B = 0 
    
     
     for i in range(row_record_info_clear-1):
@@ -44,7 +42,6 @@ def selectwindow(record_info_clear):
                     person_A_temp = record_info_clear[i+1]
                     person_A.append(person_A_temp)
                     person_A_info = np.array(person_A)
-#                    index_A = index_A + 1
                     checkpoint = 0
                 else:
                     person_B_temp = record_info_clear[i+1]
@@ -61,7 +58,6 @@ def selectwindow(record_info_clear):
                     person_A_temp = record_info_clear[i+1]
                     person_A.append(person_A_temp)
                     person_A_info = np.array(person_A)
-#                    index_A = index_A + 1
                     checkpoint = 0           
         else:# same frame
             if checkpoint == 0:
